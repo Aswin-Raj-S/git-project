@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Shield, ShieldCheck, ShieldAlert, ShieldX, FileCheck, User, Award, AlertTriangle } from "lucide-react";
+import Image from 'next/image';
+import { Shield, ShieldCheck, ShieldAlert, ShieldX, Clock, FileCheck, Globe, User, Award, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -76,10 +77,10 @@ export function TrustCard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'high': return 'text-green-800 bg-green-50 border-green-200';
-      case 'medium': return 'text-yellow-800 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-orange-800 bg-orange-50 border-orange-200';
-      default: return 'text-gray-800 bg-gray-50 border-gray-200';
+      case 'high': return 'text-green-600 bg-green-50 border-green-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low': return 'text-orange-600 bg-orange-50 border-orange-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
@@ -92,11 +93,20 @@ export function TrustCard() {
     }
   };
 
+  const getProgressBgColor = (status: string) => {
+    switch (status) {
+      case 'high': return 'bg-green-100';
+      case 'medium': return 'bg-yellow-100';
+      case 'low': return 'bg-orange-100';
+      default: return 'bg-gray-100';
+    }
+  };
+
   const getTrustLevel = (score: number) => {
-    if (score >= 80) return { level: 'High Trust', color: 'text-green-800', bgColor: 'bg-green-50', progressColor: 'bg-green-500' };
-    if (score >= 60) return { level: 'Medium Trust', color: 'text-yellow-800', bgColor: 'bg-yellow-50', progressColor: 'bg-yellow-500' };
-    if (score >= 40) return { level: 'Low Trust', color: 'text-orange-800', bgColor: 'bg-orange-50', progressColor: 'bg-orange-500' };
-    return { level: 'Very Low Trust', color: 'text-red-800', bgColor: 'bg-red-50', progressColor: 'bg-red-500' };
+    if (score >= 80) return { level: 'High Trust', color: 'text-green-600', bgColor: 'bg-green-50', progressColor: 'bg-green-500' };
+    if (score >= 60) return { level: 'Medium Trust', color: 'text-yellow-600', bgColor: 'bg-yellow-50', progressColor: 'bg-yellow-500' };
+    if (score >= 40) return { level: 'Low Trust', color: 'text-orange-600', bgColor: 'bg-orange-50', progressColor: 'bg-orange-500' };
+    return { level: 'Very Low Trust', color: 'text-red-600', bgColor: 'bg-red-50', progressColor: 'bg-red-500' };
   };
 
   const trustLevel = getTrustLevel(overallTrustScore);
@@ -119,7 +129,7 @@ export function TrustCard() {
         {/* Overall Trust Score */}
         <div className={`p-4 rounded-lg border ${trustLevel.bgColor}`}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-lg text-black">Overall Trust Score</h3>
+            <h3 className="font-semibold text-lg">Overall Trust Score</h3>
             <Badge variant="outline" className={trustLevel.color}>
               {trustLevel.level}
             </Badge>
@@ -133,7 +143,7 @@ export function TrustCard() {
                 ></div>
               </div>
             </div>
-            <span className="text-2xl font-bold text-black">
+            <span className={`text-2xl font-bold ${trustLevel.color}`}>
               {overallTrustScore}%
             </span>
           </div>
@@ -149,7 +159,7 @@ export function TrustCard() {
               <div className="flex items-center space-x-2 mb-3">
                 {getStatusIcon(indicator.status)}
                 <h4 className="font-semibold">{indicator.category}</h4>
-                <Badge variant="outline" className="ml-auto text-black font-semibold">
+                <Badge variant="outline" className="ml-auto">
                   {indicator.score}%
                 </Badge>
               </div>
@@ -187,19 +197,19 @@ export function TrustCard() {
 
         {/* Verification Badges */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="text-green-700">
+          <Badge variant="outline" className="text-green-600">
             <FileCheck className="h-3 w-3 mr-1" />
             SafeTensors Format
           </Badge>
-          <Badge variant="outline" className="text-blue-700">
+          <Badge variant="outline" className="text-blue-600">
             <Shield className="h-3 w-3 mr-1" />
             No Executables
           </Badge>
-          <Badge variant="outline" className="text-yellow-700">
-            <AlertTriangle className="h-3 w-3 mr-1" />
+          <Badge variant="outline" className="text-yellow-600">
+            <Clock className="h-3 w-3 mr-1" />
             Unverified Origin
           </Badge>
-          <Badge variant="outline" className="text-gray-700">
+          <Badge variant="outline" className="text-gray-600">
             <User className="h-3 w-3 mr-1" />
             Unknown Author
           </Badge>
