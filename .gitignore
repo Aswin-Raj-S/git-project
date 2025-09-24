@@ -43,3 +43,45 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# ============================================
+# MODEL SECURITY SCANNER SPECIFIC
+# ============================================
+
+# Uploaded model files - NEVER commit these for security!
+uploads/
+*.safetensors
+*.pth
+*.pt
+*.pickle
+*.pkl
+*.h5
+*.hdf5
+*.onnx
+*.pb
+*.tflite
+*.mlmodel
+*.coreml
+
+# Analysis cache and temporary files
+analysis-cache/
+temp-analysis/
+scan-results/
+
+# Security scanning logs
+security-scan.log
+analysis.log
+malware-scan.log
+
+# Large model archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Database files (if added later)
+*.sqlite
+*.db
+*.sqlite3
