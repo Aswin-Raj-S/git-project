@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-backdoor-triggers.ts';
+import {ai} from './genkit';
+import '@/ai/flows/visualize-ai-explainability-heatmaps';

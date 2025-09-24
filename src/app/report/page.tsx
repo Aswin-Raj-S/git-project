@@ -2,7 +2,6 @@ import { Header } from '@/components/layout/header';
 import { ArchitectureCard } from '@/components/report/architecture-card';
 import { MalwareScanCard } from '@/components/report/malware-scan-card';
 import { SummaryCard } from '@/components/report/summary-card';
-import { TrojanCard } from '@/components/report/trojan-card';
 import { TrustCard } from '@/components/report/trust-card';
 import ModelDetailsCard from '@/components/report/model-details-card';
 import { Button } from '@/components/ui/button';
@@ -36,10 +35,6 @@ export default function ReportPage() {
             <MalwareScanCard />
           </div>
 
-          <div className="lg:col-span-2">
-            <TrojanCard />
-          </div>
-          
           <div className="lg:col-span-2">
             <TrustCard />
           </div>

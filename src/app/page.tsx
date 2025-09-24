@@ -3,7 +3,7 @@
 import { Header } from '@/components/layout/header';
 import { UploadForm } from '@/components/upload-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileScan, ShieldCheck, Target, ShieldOff } from 'lucide-react';
+import { FileScan, ShieldCheck, ShieldOff } from 'lucide-react';
 
 export default function Home() {
   const features = [
@@ -16,11 +16,6 @@ export default function Home() {
       icon: <FileScan className="w-8 h-8 text-primary" />,
       title: 'Architecture Analysis', 
       description: 'Deep inspection of model structure, parameters, and security vulnerabilities.',
-    },
-    {
-      icon: <Target className="w-8 h-8 text-primary" />,
-      title: 'Backdoor Detection',
-      description: 'AI-powered synthesis to identify potential hidden backdoor triggers.',
     },
     {
       icon: <ShieldCheck className="w-8 h-8 text-primary" />,

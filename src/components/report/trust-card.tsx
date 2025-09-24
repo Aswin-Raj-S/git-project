@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Shield, ShieldCheck, ShieldAlert, ShieldX, Clock, FileCheck, Globe, User, Award, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface TrustIndicator {
@@ -85,11 +84,29 @@ export function TrustCard() {
     }
   };
 
+  const getProgressBarColor = (status: string) => {
+    switch (status) {
+      case 'high': return 'bg-green-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-orange-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getProgressBgColor = (status: string) => {
+    switch (status) {
+      case 'high': return 'bg-green-100';
+      case 'medium': return 'bg-yellow-100';
+      case 'low': return 'bg-orange-100';
+      default: return 'bg-gray-100';
+    }
+  };
+
   const getTrustLevel = (score: number) => {
-    if (score >= 80) return { level: 'High Trust', color: 'text-green-600', bgColor: 'bg-green-50' };
-    if (score >= 60) return { level: 'Medium Trust', color: 'text-yellow-600', bgColor: 'bg-yellow-50' };
-    if (score >= 40) return { level: 'Low Trust', color: 'text-orange-600', bgColor: 'bg-orange-50' };
-    return { level: 'Very Low Trust', color: 'text-red-600', bgColor: 'bg-red-50' };
+    if (score >= 80) return { level: 'High Trust', color: 'text-green-600', bgColor: 'bg-green-50', progressColor: 'bg-green-500' };
+    if (score >= 60) return { level: 'Medium Trust', color: 'text-yellow-600', bgColor: 'bg-yellow-50', progressColor: 'bg-yellow-500' };
+    if (score >= 40) return { level: 'Low Trust', color: 'text-orange-600', bgColor: 'bg-orange-50', progressColor: 'bg-orange-500' };
+    return { level: 'Very Low Trust', color: 'text-red-600', bgColor: 'bg-red-50', progressColor: 'bg-red-500' };
   };
 
   const trustLevel = getTrustLevel(overallTrustScore);
@@ -119,7 +136,12 @@ export function TrustCard() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex-1">
-              <Progress value={overallTrustScore} className="h-3" />
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className={`h-3 rounded-full transition-all duration-300 ${trustLevel.progressColor}`}
+                  style={{ width: `${overallTrustScore}%` }}
+                ></div>
+              </div>
             </div>
             <span className={`text-2xl font-bold ${trustLevel.color}`}>
               {overallTrustScore}%
@@ -141,7 +163,12 @@ export function TrustCard() {
                   {indicator.score}%
                 </Badge>
               </div>
-              <Progress value={indicator.score} className="h-2 mb-3" />
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div 
+                  className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor(indicator.status)}`}
+                  style={{ width: `${indicator.score}%` }}
+                ></div>
+              </div>
               <ul className="text-sm space-y-1">
                 {indicator.details.map((detail, idx) => (
                   <li key={idx} className="flex items-start space-x-2">
