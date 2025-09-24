@@ -25,8 +25,8 @@ export function ExplainabilityCard() {
     try {
       const input = {
         modelArchitecture: 'Custom CNN for CIFAR-10',
-        inputImageUri: findImage('dog-park')?.imageUrl || '',
-        classOfInterest: 'Dog',
+        inputImageUri: findImage('cat-on-couch')?.imageUrl || '',
+        classOfInterest: 'Cat',
       };
       const response = await visualizeAIExplainabilityHeatmaps(input);
       setResult(response);
@@ -38,7 +38,7 @@ export function ExplainabilityCard() {
     }
   };
 
-  const inputImage = findImage('dog-park');
+  const inputImage = findImage('cat-on-couch');
 
   return (
     <Card>
@@ -60,7 +60,7 @@ export function ExplainabilityCard() {
                 Generating...
               </>
             ) : (
-              'Generate Heatmap for "Dog" Class'
+              'Generate Heatmap for "Cat" Class'
             )}
           </Button>
         </div>

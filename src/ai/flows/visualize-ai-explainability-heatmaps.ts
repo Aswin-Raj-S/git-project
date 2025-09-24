@@ -65,6 +65,10 @@ Generate a heatmap that highlights the areas of the input image that are most im
 
 Ensure that the heatmap is a valid PNG data URI.
 `,
+  model: 'googleai/gemini-2.5-flash-image-preview',
+  config: {
+    responseModalities: ['TEXT', 'IMAGE'],
+  },
 });
 
 const visualizeAIExplainabilityHeatmapsFlow = ai.defineFlow(
@@ -74,7 +78,11 @@ const visualizeAIExplainabilityHeatmapsFlow = ai.defineFlow(
     outputSchema: VisualizeAIExplainabilityHeatmapsOutputSchema,
   },
   async input => {
-    const {output} = await visualizeAIExplainabilityHeatmapsPrompt(input);
-    return output!;
+    const response = await visualizeAIExplainabilityHeatmapsPrompt(input);
+    const output = response.output!;
+    if (response.media) {
+      output.heatmapUri = response.media.url;
+    }
+    return output;
   }
 );
