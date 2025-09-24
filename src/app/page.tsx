@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { UploadForm } from '@/components/upload-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Blocks, Eye, FileScan, ShieldCheck, Target } from 'lucide-react';
+import { BarChart, Blocks, Eye, FileScan, ShieldCheck, Target, ShieldOff } from 'lucide-react';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,11 @@ export default function Home() {
       icon: <FileScan className="w-8 h-8 text-primary" />,
       title: 'Static Analysis',
       description: 'Inspect model structure for anomalies before execution.',
+    },
+    {
+      icon: <ShieldOff className="w-8 h-8 text-primary" />,
+      title: 'Malware Scan',
+      description: 'Scan the model file for known viruses, trojans, and ransomware.',
     },
     {
       icon: <BarChart className="w-8 h-8 text-primary" />,
