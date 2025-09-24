@@ -185,6 +185,100 @@ async function performMalwareScan(fileBuffer: Buffer, fileName: string) {
   };
 }
 
+// Extract model metadata information
+async function extractModelMetadata(fileBuffer: Buffer, fileName: string, fileSize: number) {
+  const metadata = {
+    format: 'Unknown',
+    framework: 'Unknown',
+    version: undefined as string | undefined,
+    author: undefined as string | undefined,
+    description: undefined as string | undefined,
+    trainingInfo: undefined as { dataset?: string; epochs?: number; accuracy?: number } | undefined,
+    dependencies: [] as string[],
+    modelSize: formatFileSize(fileSize),
+    compressionRatio: undefined as number | undefined
+  };
+  
+  // Determine format and framework based on file extension
+  if (fileName.endsWith('.safetensors')) {
+    metadata.format = 'SafeTensors';
+    metadata.framework = 'Multi-framework (Hugging Face)';
+  } else if (fileName.endsWith('.pth') || fileName.endsWith('.pt')) {
+    metadata.format = 'PyTorch';
+    metadata.framework = 'PyTorch';
+  } else if (fileName.endsWith('.h5')) {
+    metadata.format = 'HDF5';
+    metadata.framework = 'TensorFlow/Keras';
+  } else if (fileName.endsWith('.pkl') || fileName.endsWith('.pickle')) {
+    metadata.format = 'Pickle';
+    metadata.framework = 'Python/Scikit-learn';
+  } else if (fileName.endsWith('.onnx')) {
+    metadata.format = 'ONNX';
+    metadata.framework = 'ONNX Runtime';
+  } else if (fileName.endsWith('.zip')) {
+    metadata.format = 'Compressed Archive';
+    metadata.framework = 'Various';
+  }
+  
+  // Try to extract metadata from SafeTensors format
+  if (fileName.endsWith('.safetensors')) {
+    try {
+      const headerSize = fileBuffer.readBigUInt64LE(0);
+      if (headerSize < 1000000) { // Reasonable header size limit
+        const headerBytes = fileBuffer.subarray(8, 8 + Number(headerSize));
+        const headerText = headerBytes.toString('utf8');
+        const headerData = JSON.parse(headerText);
+        
+        if (headerData.__metadata__) {
+          const meta = headerData.__metadata__;
+          metadata.author = meta.author || meta.creator;
+          metadata.description = meta.description || meta.model_name;
+          metadata.version = meta.version || meta.model_version;
+          
+          if (meta.training_info) {
+            metadata.trainingInfo = {
+              dataset: meta.training_info.dataset,
+              epochs: meta.training_info.epochs,
+              accuracy: meta.training_info.accuracy
+            };
+          }
+        }
+      }
+    } catch (error) {
+      // Metadata extraction failed, continue with basic info
+    }
+  }
+  
+  // Check for common framework dependencies in the file content
+  const fileText = fileBuffer.toString('utf8', 0, Math.min(10000, fileBuffer.length));
+  const dependencies = [];
+  
+  if (fileText.includes('torch') || fileText.includes('pytorch')) {
+    dependencies.push('PyTorch');
+  }
+  if (fileText.includes('tensorflow') || fileText.includes('keras')) {
+    dependencies.push('TensorFlow');
+  }
+  if (fileText.includes('numpy')) {
+    dependencies.push('NumPy');
+  }
+  if (fileText.includes('transformers')) {
+    dependencies.push('Hugging Face Transformers');
+  }
+  if (fileText.includes('sklearn')) {
+    dependencies.push('Scikit-learn');
+  }
+  
+  metadata.dependencies = dependencies;
+  
+  return metadata;
+}
+
+// Helper function to format file sizes
+function formatFileSize(bytes: number): string {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Bytes';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
 // Enhanced AI model detection and analysis
 async function analyzeArchitecture(fileBuffer: Buffer, fileName: string) {
   let modelType = 'Unknown';
@@ -437,95 +531,6 @@ async function performAdvancedSecurityAnalysis(fileBuffer: Buffer, fileName: str
   return { issues, suspicious };
 }
 
-// Extract model metadata information
-async function extractModelMetadata(fileBuffer: Buffer, fileName: string, fileSize: number) {
-  const metadata = {
-    format: 'Unknown',
-    framework: 'Unknown',
-    version: undefined as string | undefined,
-    author: undefined as string | undefined,
-    description: undefined as string | undefined,
-    trainingInfo: undefined as { dataset?: string; epochs?: number; accuracy?: number } | undefined,
-    dependencies: [] as string[],
-    modelSize: formatFileSize(fileSize),
-    compressionRatio: undefined as number | undefined
-  };
-  
-  // Determine format and framework based on file extension
-  if (fileName.endsWith('.safetensors')) {
-    metadata.format = 'SafeTensors';
-    metadata.framework = 'Multi-framework (Hugging Face)';
-  } else if (fileName.endsWith('.pth') || fileName.endsWith('.pt')) {
-    metadata.format = 'PyTorch';
-    metadata.framework = 'PyTorch';
-  } else if (fileName.endsWith('.h5')) {
-    metadata.format = 'HDF5';
-    metadata.framework = 'TensorFlow/Keras';
-  } else if (fileName.endsWith('.pkl') || fileName.endsWith('.pickle')) {
-    metadata.format = 'Pickle';
-    metadata.framework = 'Python/Scikit-learn';
-  } else if (fileName.endsWith('.onnx')) {
-    metadata.format = 'ONNX';
-    metadata.framework = 'ONNX Runtime';
-  } else if (fileName.endsWith('.zip')) {
-    metadata.format = 'Compressed Archive';
-    metadata.framework = 'Various';
-  }
-  
-  // Try to extract metadata from SafeTensors format
-  if (fileName.endsWith('.safetensors')) {
-    try {
-      const headerSize = fileBuffer.readBigUInt64LE(0);
-      if (headerSize < 1000000) { // Reasonable header size limit
-        const headerBytes = fileBuffer.subarray(8, 8 + Number(headerSize));
-        const headerText = headerBytes.toString('utf8');
-        const headerData = JSON.parse(headerText);
-        
-        if (headerData.__metadata__) {
-          const meta = headerData.__metadata__;
-          metadata.author = meta.author || meta.creator;
-          metadata.description = meta.description || meta.model_name;
-          metadata.version = meta.version || meta.model_version;
-          
-          if (meta.training_info) {
-            metadata.trainingInfo = {
-              dataset: meta.training_info.dataset,
-              epochs: meta.training_info.epochs,
-              accuracy: meta.training_info.accuracy
-            };
-          }
-        }
-      }
-    } catch (error) {
-      // Metadata extraction failed, continue with basic info
-    }
-  }
-  
-  // Check for common framework dependencies in the file content
-  const fileText = fileBuffer.toString('utf8', 0, Math.min(10000, fileBuffer.length));
-  const dependencies = [];
-  
-  if (fileText.includes('torch') || fileText.includes('pytorch')) {
-    dependencies.push('PyTorch');
-  }
-  if (fileText.includes('tensorflow') || fileText.includes('keras')) {
-    dependencies.push('TensorFlow');
-  }
-  if (fileText.includes('numpy')) {
-    dependencies.push('NumPy');
-  }
-  if (fileText.includes('transformers')) {
-    dependencies.push('Hugging Face Transformers');
-  }
-  if (fileText.includes('sklearn')) {
-    dependencies.push('Scikit-learn');
-  }
-  
-  metadata.dependencies = dependencies;
-  
-  return metadata;
-}
-
 // Helper function to calculate entropy
 function calculateEntropy(buffer: Buffer): number {
   const freq: Record<number, number> = {};
@@ -554,6 +559,70 @@ function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+}
+        export async function POST(request: NextRequest) {
+  try {
+    const { fileId } = await request.json();
+    
+    if (!fileId) {
+      return NextResponse.json({ success: false, error: 'No file ID provided' });
+    }
+    
+    // Find the uploaded file
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    
+    // For now, find file by matching fileId prefix
+    const fs = require('fs');
+    const uploadedFiles = fs.readdirSync(uploadsDir).filter((f: string) => f.startsWith(fileId));
+    
+    if (uploadedFiles.length === 0) {
+      return NextResponse.json({ success: false, error: 'File not found' });
+    }
+    
+    const fileName = uploadedFiles[0];
+    const filePath = path.join(uploadsDir, fileName);
+    const originalName = fileName.replace(`${fileId}_`, '');
+    
+    // Perform analysis
+    const analysisResult = await analyzeModelFile(filePath, originalName, fileId);
+    
+    return NextResponse.json({ 
+      success: true, 
+      analysis: analysisResult 
+    });
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to analyze file' 
+    });
+  }
+}
+
+function calculateRiskScore(malwareScan: any, architecture: any): number {
+  let score = 0;
+  
+  // Malware scan contribution (0-60 points)
+  if (malwareScan.status === 'infected') score += 60;
+  else if (malwareScan.status === 'suspicious') score += 30;
+  
+  // Add points based on number of threats found
+  score += Math.min(malwareScan.threatsFound * 5, 20);
+  
+  // Architecture contribution (0-35 points)
+  if (architecture.suspicious) score += 20;
+  if (architecture.modelType.includes('PyTorch')) score += 15; // Pickle risk
+  if (architecture.securityIssues && architecture.securityIssues.length > 0) {
+    score += Math.min(architecture.securityIssues.length * 5, 15);
+  }
+  
+  // Model size contribution (0-15 points)
+  if (architecture.parameters > 100000000000) score += 15; // > 100B parameters
+  else if (architecture.parameters > 10000000000) score += 10; // > 10B parameters
+  else if (architecture.parameters > 1000000000) score += 5; // > 1B parameters
+  
+  return Math.min(score, 100);
 }
 
 function calculateRiskScore(malwareScan: any, architecture: any): number {
@@ -591,6 +660,7 @@ export async function POST(request: NextRequest) {
     
     // Find the uploaded file
     const uploadsDir = path.join(process.cwd(), 'uploads');
+    const files = await readFile(path.join(uploadsDir, '.')).catch(() => null);
     
     // For now, find file by matching fileId prefix
     const fs = require('fs');

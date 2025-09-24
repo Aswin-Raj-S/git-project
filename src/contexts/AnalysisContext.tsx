@@ -12,6 +12,8 @@ interface AnalysisResult {
     threatsFound: number;
     scanTime: string;
     details: string[];
+    severityLevel: 'low' | 'medium' | 'high' | 'critical';
+    recommendations: string[];
   };
   architecture: {
     modelType: string;
@@ -19,6 +21,21 @@ interface AnalysisResult {
     layers: string[];
     suspicious: boolean;
     securityIssues: string[];
+  };
+  metadata: {
+    format: string;
+    framework: string;
+    version?: string;
+    author?: string;
+    description?: string;
+    trainingInfo?: {
+      dataset?: string;
+      epochs?: number;
+      accuracy?: number;
+    };
+    dependencies?: string[];
+    modelSize: string;
+    compressionRatio?: number;
   };
   riskScore: number;
   timestamp: string;
