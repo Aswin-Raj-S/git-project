@@ -8,38 +8,26 @@ import { FileScan, ShieldCheck, Target, ShieldOff } from 'lucide-react';
 export default function Home() {
   const features = [
     {
-      icon: <FileScan className="w-8 h-8 text-primary" />,
-      title: 'Static Analysis',
-      description: 'Inspect model structure for anomalies before execution.',
-    },
-    {
       icon: <ShieldOff className="w-8 h-8 text-primary" />,
       title: 'Malware Scan',
-      description: 'Scan the model file for known viruses, trojans, and ransomware.',
+      description: 'Comprehensive scan for viruses, trojans, ransomware, and malicious code patterns.',
     },
     {
-      icon: <BarChart className="w-8 h-8 text-primary" />,
-      title: 'Performance Baseline',
-      description: 'Measure clean accuracy and loss to establish normal behavior.',
-    },
-    {
-      icon: <ShieldCheck className="w-8 h-8 text-primary" />,
-      title: 'Adversarial Robustness',
-      description: 'Test the model’s ability to withstand adversarial attacks like FGSM.',
-    },
-    {
-      icon: <Blocks className="w-8 h-8 text-primary" />,
-      title: 'Neuron Analysis',
-      description: 'Monitor neuron activity to identify dormant or suspicious activations.',
+      icon: <FileScan className="w-8 h-8 text-primary" />,
+      title: 'Architecture Analysis', 
+      description: 'Deep inspection of model structure, parameters, and security vulnerabilities.',
     },
     {
       icon: <Target className="w-8 h-8 text-primary" />,
       title: 'Backdoor Detection',
-      description: 'Synthesize and identify potential hidden backdoor triggers in your model.',
+      description: 'AI-powered synthesis to identify potential hidden backdoor triggers.',
     },
-  ];
-
-  return (
+    {
+      icon: <ShieldCheck className="w-8 h-8 text-primary" />,
+      title: 'Risk Assessment',
+      description: 'Comprehensive security scoring based on real analysis results.',
+    },
+  ];  return (
     <div className="flex flex-col flex-1">
       <Header />
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-8 md:py-12">
@@ -54,7 +42,7 @@ export default function Home() {
             <UploadForm />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {features.slice(0, 4).map((feature, index) => (
+            {features.map((feature, index) => (
               <Card key={index} className="bg-card/50 backdrop-blur-sm">
                 <CardHeader>
                   <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
