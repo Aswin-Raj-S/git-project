@@ -1,12 +1,33 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Info, Shield, ShieldCheck, ShieldX } from 'lucide-react';
+import { Info, Shield, ShieldCheck, ShieldX, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAnalysis } from '@/contexts/AnalysisContext';
 
-interface SummaryCardProps {
-  riskScore: number;
-}
+export function SummaryCard() {
+  const { analysisResult } = useAnalysis();
+  
+  if (!analysisResult) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Overall Risk Assessment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              No analysis data available. Please upload and analyze a model first.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
-export function SummaryCard({ riskScore }: SummaryCardProps) {
+  const { riskScore, fileName, timestamp } = analysisResult;
   const getRiskDetails = (score: number) => {
     if (score > 75) {
       return {
@@ -69,10 +90,31 @@ export function SummaryCard({ riskScore }: SummaryCardProps) {
           </div>
           <div className="md:col-span-2 space-y-4">
             <p className="text-base text-muted-foreground">{riskDetails.description}</p>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Model:</span>
+                <span className="font-medium">{fileName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Analyzed:</span>
+                <span className="font-medium">{new Date(timestamp).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Malware Status:</span>
+                <span className={`font-medium ${
+                  analysisResult.malwareScan.status === 'clean' ? 'text-green-500' :
+                  analysisResult.malwareScan.status === 'infected' ? 'text-red-500' : 'text-yellow-500'
+                }`}>
+                  {analysisResult.malwareScan.status.charAt(0).toUpperCase() + analysisResult.malwareScan.status.slice(1)}
+                </span>
+              </div>
+            </div>
+            
             <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
                 <Info className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                 <p className="text-sm text-muted-foreground">
-                    This automated risk score is for informational purposes. It is not a guarantee of security. Always perform manual reviews for critical applications.
+                    This automated risk score is based on actual analysis of your uploaded model. Always perform manual reviews for critical applications.
                 </p>
             </div>
           </div>

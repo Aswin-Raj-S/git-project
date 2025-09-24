@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import wav from 'wav';
 
 const GenerateBackdoorTriggersInputSchema = z.object({
   neuronActivationProfile: z

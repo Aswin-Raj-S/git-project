@@ -1,39 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { UploadForm } from '@/components/upload-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Blocks, Eye, FileScan, ShieldCheck, Target, ShieldOff } from 'lucide-react';
+import { FileScan, ShieldCheck, Target, ShieldOff } from 'lucide-react';
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const router = useRouter();
-
-  const handleAnalyze = () => {
-    setLoading(true);
-    setProgress(0);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) {
-          return prev;
-        }
-        return prev + 5;
-      });
-    }, 200);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      setProgress(100);
-      setTimeout(() => {
-        router.push('/report');
-      }, 500);
-    }, 4000);
-  };
-
   const features = [
     {
       icon: <FileScan className="w-8 h-8 text-primary" />,
@@ -54,11 +26,6 @@ export default function Home() {
       icon: <ShieldCheck className="w-8 h-8 text-primary" />,
       title: 'Adversarial Robustness',
       description: 'Test the model’s ability to withstand adversarial attacks like FGSM.',
-    },
-    {
-      icon: <Eye className="w-8 h-8 text-primary" />,
-      title: 'Explainability Audit',
-      description: 'Use Grad-CAM to visualize decision focus and ensure interpretability.',
     },
     {
       icon: <Blocks className="w-8 h-8 text-primary" />,
@@ -84,7 +51,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground">
               ModelSherlock is a comprehensive security auditing tool thatStress-tests your AI models, identifies vulnerabilities, and delivers actionable insights to help you build safer, more reliable AI.
             </p>
-            <UploadForm onAnalyze={handleAnalyze} loading={loading} progress={progress} />
+            <UploadForm />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {features.slice(0, 4).map((feature, index) => (

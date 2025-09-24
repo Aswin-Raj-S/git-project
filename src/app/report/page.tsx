@@ -1,9 +1,6 @@
 import { Header } from '@/components/layout/header';
 import { ArchitectureCard } from '@/components/report/architecture-card';
-import { BaselineCard } from '@/components/report/baseline-card';
-import { ExplainabilityCard } from '@/components/report/explainability-card';
 import { MalwareScanCard } from '@/components/report/malware-scan-card';
-import { RobustnessCard } from '@/components/report/robustness-card';
 import { SummaryCard } from '@/components/report/summary-card';
 import { TrojanCard } from '@/components/report/trojan-card';
 import { Button } from '@/components/ui/button';
@@ -23,28 +20,20 @@ export default function ReportPage() {
             Download PDF
           </Button>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-4">
-            <SummaryCard riskScore={82} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="lg:col-span-2">
+            <SummaryCard />
           </div>
 
-          <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             <ArchitectureCard />
-            <RobustnessCard />
           </div>
 
-          <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             <MalwareScanCard />
-            <div className="lg:col-span-3">
-              <BaselineCard />
-            </div>
           </div>
 
-          <div className="lg:col-span-4">
-            <ExplainabilityCard />
-          </div>
-
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-2">
             <TrojanCard />
           </div>
         </div>

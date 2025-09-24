@@ -1,28 +1,34 @@
 'use client';
 
 import { useState, type DragEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FileUp, Loader2, UploadCloud } from 'lucide-react';
+import { useAnalysis } from '@/contexts/AnalysisContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface UploadFormProps {
-  onAnalyze: () => void;
-  loading: boolean;
-  progress: number;
+  // Remove the old props since we'll handle everything internally now
 }
 
-export function UploadForm({ onAnalyze, loading, progress }: UploadFormProps) {
+export function UploadForm({}: UploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const { setAnalysisResult, setIsAnalyzing } = useAnalysis();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleFileChange = (selectedFile: File | null) => {
     if (selectedFile) {
-      // Basic validation for .pth or .zip
-      if (selectedFile.name.endsWith('.pth') || selectedFile.name.endsWith('.zip')) {
+      // Basic validation for .pth, .zip, or .safetensors
+      if (selectedFile.name.endsWith('.pth') || selectedFile.name.endsWith('.zip') || selectedFile.name.endsWith('.safetensors')) {
         setFile(selectedFile);
       } else {
-        alert('Please upload a .pth or .zip file.');
+        alert('Please upload a .pth, .zip, or .safetensors file.');
       }
     }
   };
@@ -54,9 +60,73 @@ export function UploadForm({ onAnalyze, loading, progress }: UploadFormProps) {
     }
   };
 
-  const handleButtonClick = () => {
-    if (file) {
-      onAnalyze();
+  const handleButtonClick = async () => {
+    if (!file) return;
+    
+    setLoading(true);
+    setIsAnalyzing(true);
+    setProgress(0);
+    
+    try {
+      // Step 1: Upload file
+      setProgress(20);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const uploadResult = await uploadResponse.json();
+      
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Upload failed');
+      }
+      
+      setProgress(50);
+      
+      // Step 2: Analyze file
+      const analyzeResponse = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fileId: uploadResult.fileId }),
+      });
+      
+      const analyzeResult = await analyzeResponse.json();
+      
+      if (!analyzeResult.success) {
+        throw new Error(analyzeResult.error || 'Analysis failed');
+      }
+      
+      setProgress(90);
+      
+      // Step 3: Store results and navigate to report
+      setAnalysisResult(analyzeResult.analysis);
+      setProgress(100);
+      
+      toast({
+        title: "Analysis Complete",
+        description: `Successfully analyzed ${file.name}`,
+      });
+      
+      setTimeout(() => {
+        router.push('/report');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : 'An error occurred during analysis',
+        variant: "destructive",
+      });
+      
+      setLoading(false);
+      setIsAnalyzing(false);
+      setProgress(0);
     }
   };
 
@@ -74,7 +144,7 @@ export function UploadForm({ onAnalyze, loading, progress }: UploadFormProps) {
       >
         <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
         <p className="mt-2 text-sm text-muted-foreground">
-          Drag & drop your model file here (.pth or .zip)
+          Drag & drop your model file here (.pth, .zip, or .safetensors)
         </p>
         <p className="text-xs text-muted-foreground">or</p>
         <Button variant="outline" size="sm" className="mt-2" onClick={() => document.getElementById('file-upload')?.click()}>
@@ -83,7 +153,7 @@ export function UploadForm({ onAnalyze, loading, progress }: UploadFormProps) {
         <input
           id="file-upload"
           type="file"
-          accept=".pth,.zip"
+          accept=".pth,.zip,.safetensors"
           className="hidden"
           onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
         />
