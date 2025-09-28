@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { FileUp, Loader2, UploadCloud } from 'lucide-react';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 import { useToast } from '@/hooks/use-toast';
+import { saveReportWithCode } from '@/lib/report-codes';
 
 interface UploadFormProps {
   // Remove the old props since we'll handle everything internally now
@@ -105,14 +106,18 @@ export function UploadForm({}: UploadFormProps) {
       
       setProgress(95);
       
-      // Step 3: Store results and navigate to report
-      setAnalysisResult(analyzeResult.analysis);
+      // Step 3: Store results with report code and navigate to report
+      const reportCode = saveReportWithCode(analyzeResult.analysis);
+      setAnalysisResult({
+        ...analyzeResult.analysis,
+        reportCode // Add report code to analysis result
+      });
       setIsAnalyzing(false); // Clear analyzing state immediately
       setProgress(100);
       
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${file.name}.`,
+        description: `Successfully analyzed ${file.name}. Report code: ${reportCode}`,
       });
       
       // Navigate immediately for faster UX

@@ -15,7 +15,7 @@ export function Header() {
               Home
             </Link>
             <Link href="/report" className="px-4 py-2 text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all font-medium">
-              Reports
+              Access Report
             </Link>
           </nav>
         </div>

@@ -12,7 +12,11 @@ import { ReportLoadingSkeleton } from '@/components/report/loading-skeleton';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Copy, CheckCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { ReportCodeInput } from '@/components/report/report-code-input';
+import { cleanupOldReports } from '@/lib/report-codes';
 
 // PDF generation function using jsPDF
 function generatePDF(analysisResult: any): void {
@@ -126,8 +130,19 @@ export default function ReportPageClient() {
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
+    // Check if user accessed report page directly without analysis data
+    if (!analysisResult && !isAnalyzing) {
+      setShowCodeInput(true);
+      return;
+    }
+
+    // Cleanup old reports on component mount
+    cleanupOldReports();
+
     // Countdown timer
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => {
@@ -149,9 +164,25 @@ export default function ReportPageClient() {
       clearTimeout(timer);
       clearInterval(countdownInterval);
     };
-  }, []);
+  }, [analysisResult, isAnalyzing]);
 
   const isLoading = showSkeleton || isAnalyzing;
+
+  const copyReportCode = async () => {
+    if (analysisResult?.reportCode) {
+      try {
+        await navigator.clipboard.writeText(analysisResult.reportCode);
+        setCodeCopied(true);
+        setTimeout(() => setCodeCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy report code');
+      }
+    }
+  };
+
+  const handleReportLoaded = () => {
+    setShowCodeInput(false);
+  };
 
   const handleDownloadPDF = async () => {
     if (!analysisResult || isGeneratingPDF) return;
@@ -169,16 +200,41 @@ export default function ReportPageClient() {
     }
   };
 
+  // Show code input if accessing directly without analysis data
+  if (showCodeInput) {
+    return <ReportCodeInput onReportLoaded={handleReportLoaded} />;
+  }
+
   return (
     <div className="flex flex-col flex-1 bg-gradient-to-br from-slate-50 to-blue-50/30">
       <Header />
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight text-slate-900">
               Audit Report
             </h1>
             <p className="text-slate-600 text-lg">Comprehensive AI Model Security Analysis</p>
+            {analysisResult?.reportCode && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-600">Report Code:</span>
+                <Badge 
+                  variant="outline" 
+                  className="font-mono text-lg px-3 py-1 cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={copyReportCode}
+                >
+                  {analysisResult.reportCode}
+                  {codeCopied ? (
+                    <CheckCircle className="w-4 h-4 ml-2 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 ml-2 text-slate-500" />
+                  )}
+                </Badge>
+                <span className="text-xs text-slate-500">
+                  {codeCopied ? 'Copied!' : 'Click to copy'}
+                </span>
+              </div>
+            )}
           </div>
           <Button 
             onClick={handleDownloadPDF}

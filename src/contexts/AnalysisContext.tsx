@@ -7,6 +7,7 @@ interface AnalysisResult {
   fileName: string;
   fileSize: number;
   fileHash: string;
+  reportCode?: string;
   malwareScan: {
     status: 'clean' | 'infected' | 'suspicious';
     threatsFound: number;
