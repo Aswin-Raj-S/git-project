@@ -83,52 +83,59 @@ export function SummaryCard() {
   const riskDetails = getRiskDetails(riskScore);
 
   return (
-    <Card className={cn('border-2', riskDetails.borderColor)}>
-      <CardHeader>
-        <CardTitle className="text-xl">Overall Risk Assessment</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid md:grid-cols-3 gap-6 items-center">
-          <div className="flex flex-col items-center justify-center text-center">
-            <div
-              className={cn(
-                'relative w-32 h-32 rounded-full flex items-center justify-center',
-                riskDetails.bgColor
-              )}
-            >
-              <div
-                className={cn(
-                  'absolute inset-0 rounded-full border-4',
-                  riskDetails.borderColor
-                )}
-              ></div>
-              <span className={cn('text-5xl font-bold', riskDetails.color)}>{riskScore}</span>
+    <Card className="overflow-hidden bg-white shadow-lg border-slate-200">
+      <CardHeader className={cn("pb-4 bg-gradient-to-r", riskDetails.bgColor, "border-b border-slate-100")}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className={cn("p-3 rounded-xl shadow-sm", riskDetails.bgColor)}>
+              <riskDetails.Icon className={cn("h-8 w-8", riskDetails.color)} />
             </div>
-            <h3 className={cn('text-2xl font-semibold mt-4', riskDetails.color)}>
-              {riskDetails.level}
-            </h3>
+            <div>
+              <CardTitle className="text-2xl text-slate-900 font-bold">Overall Risk Assessment</CardTitle>
+              <p className="text-slate-600 mt-1">
+                {fileName} • {new Date(timestamp).toLocaleString()}
+              </p>
+            </div>
           </div>
-          <div className="md:col-span-2 space-y-4">
-            <p className="text-base text-muted-foreground">{riskDetails.description}</p>
+          <div className="text-right">
+            <div className={cn("text-4xl font-bold mb-2", riskDetails.color)}>
+              {riskScore}/100
+            </div>
+            <div className={cn("text-sm font-semibold px-4 py-2 rounded-full shadow-sm", riskDetails.bgColor, riskDetails.color)}>
+              {riskDetails.level}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-8">
+        <div className="space-y-6">
+          <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
+            <h3 className="font-semibold text-lg mb-3 text-slate-900">Risk Analysis</h3>
+            <p className="text-slate-600 leading-relaxed">
+              {riskDetails.description}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {analysisResult.architecture?.layers?.length || 'N/A'}
+              </div>
+              <div className="text-sm text-slate-600">Layers Analyzed</div>
+            </div>
             
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Model:</span>
-                <span className="font-medium">{fileName}</span>
+            <div className="text-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {analysisResult.malwareScan?.threatsFound || 0}
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Analyzed:</span>
-                <span className="font-medium">{new Date(timestamp).toLocaleString()}</span>
+              <div className="text-sm text-slate-600">Threats Found</div>
+            </div>
+            
+            <div className="text-center p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {Math.round((1 - riskScore/100) * 100)}%
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Malware Status:</span>
-                <span className={`font-medium ${
-                  analysisResult.malwareScan.status === 'clean' ? 'text-green-500' :
-                  analysisResult.malwareScan.status === 'infected' ? 'text-red-500' : 'text-yellow-500'
-                }`}>
-                  {analysisResult.malwareScan.status.charAt(0).toUpperCase() + analysisResult.malwareScan.status.slice(1)}
-                </span>
-              </div>
+              <div className="text-sm text-slate-600">Trust Score</div>
             </div>
           </div>
         </div>

@@ -90,33 +90,35 @@ export function TrustCard() {
   const riskLevel = getRiskLevel(overallTrustScore);
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center space-y-0 pb-4">
-        <div className="flex items-center space-x-2">
-          <Award className="h-6 w-6 text-blue-600" />
+    <Card className="w-full bg-white shadow-lg border-slate-200 overflow-hidden">
+      <CardHeader className="pb-6 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-100">
+        <div className="flex items-center gap-4">
+          <div className="p-4 rounded-xl bg-primary/10 shadow-sm">
+            <Award className="h-8 w-8 text-primary" />
+          </div>
           <div>
-            <CardTitle className="text-xl">Model Trust & Provenance</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-bold text-slate-900">Model Trust & Provenance</CardTitle>
+            <CardDescription className="text-slate-600 mt-1">
               Comprehensive analysis of model trustworthiness and origin verification
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="p-6 space-y-8">
         {/* Overall Trust Score */}
-        <div className={`p-4 rounded-lg border ${riskLevel.bgColor}`}>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-lg text-black">Overall Risk Assessment</h3>
-            <Badge variant="outline" className={riskLevel.color}>
+        <div className={`p-6 rounded-xl border border-slate-200 shadow-sm ${riskLevel.bgColor}`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-xl text-slate-900">Overall Risk Assessment</h3>
+            <Badge variant="outline" className={`${riskLevel.color} font-semibold px-3 py-1`}>
               {riskLevel.level}
             </Badge>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <div className="flex-1">
-              <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="w-full bg-slate-200 rounded-full h-4 shadow-inner">
                 <div 
-                  className={`h-3 rounded-full transition-all duration-300 ${riskLevel.progressColor}`}
+                  className={`h-4 rounded-full transition-all duration-500 ${riskLevel.progressColor} shadow-sm`}
                   style={{ width: `${overallTrustScore}%` }}
                 ></div>
               </div>

@@ -187,47 +187,69 @@ export function UploadForm({}: UploadFormProps) {
       </div>
 
       {file && !loading && (
-        <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
-          <div className="flex items-center gap-3">
-            <FileUp className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">{file.name}</span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <FileUp className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-slate-900 truncate">{file.name}</p>
+              <p className="text-sm text-slate-500">
+                {(file.size / (1024 * 1024)).toFixed(2)} MB • Model File
+              </p>
+            </div>
           </div>
-          <Button onClick={handleButtonClick} disabled={!file}>
-            Analyze Model
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={handleButtonClick}
+              disabled={!file}
+              className="flex-1 gap-3 h-14 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Start Security Analysis
+            </Button>
+            <Button
+              onClick={() => setFile(null)}
+              variant="outline"
+              className="px-6 h-14 rounded-xl border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all duration-300"
+            >
+              Remove
+            </Button>
+          </div>
         </div>
       )}
       
       {loading && (
-        <div className="space-y-4 p-4 bg-secondary/50 rounded-lg border">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <div className="flex-1">
-              <div className="flex justify-between text-sm font-medium mb-1">
-                <span>
+        <div className="space-y-6 p-8 bg-gradient-to-br from-blue-50/80 to-indigo-50/40 rounded-2xl border border-blue-200/40 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-slate-800">
                   {progress < 25 ? "Uploading model..." : 
                    progress < 65 ? "Scanning for threats..." : 
                    progress < 90 ? "Analyzing architecture..." : 
-                   "Almost ready..."}
+                   "Finalizing report..."}
                 </span>
-                <span className="tabular-nums">{Math.round(progress)}%</span>
+                <span className="text-lg font-bold text-primary tabular-nums">{Math.round(progress)}%</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <Progress value={progress} className="h-3 bg-white/60" />
             </div>
           </div>
           
-          <div className="text-center space-y-2">
-            <p className="text-xs text-muted-foreground animate-pulse">
-              🔍 Running security analysis - Just a moment!
-            </p>
-            <div className="flex justify-center items-center gap-1 text-xs text-muted-foreground">
-              <span>Securing your AI model</span>
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 rounded-full">
               <div className="flex gap-1">
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1 h-1 bg-primary rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
               </div>
+              <span className="text-sm font-medium text-slate-700">Securing your AI model</span>
             </div>
+            <p className="text-sm text-slate-600">
+              🔍 Running comprehensive security analysis - This may take a moment
+            </p>
           </div>
         </div>
       )}

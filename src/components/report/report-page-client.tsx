@@ -45,22 +45,25 @@ export default function ReportPageClient() {
   const isLoading = showSkeleton || isAnalyzing;
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 bg-gradient-to-br from-slate-50 to-blue-50/30">
       <Header />
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold font-headline tracking-tight">
-            Audit Report
-          </h1>
-          <Button disabled={isLoading}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+          <div className="space-y-2">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight text-slate-900">
+              Audit Report
+            </h1>
+            <p className="text-slate-600 text-lg">Comprehensive AI Model Security Analysis</p>
+          </div>
+          <Button disabled={isLoading} className="h-12 px-6 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
                 Generating...
               </>
             ) : (
               <>
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-5 h-5 mr-2" />
                 Download PDF
               </>
             )}
@@ -70,9 +73,9 @@ export default function ReportPageClient() {
         {isLoading ? (
           <div className="space-y-6">
             {(isAnalyzing || showSkeleton) && (
-              <Alert>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <AlertDescription className="ml-2">
+              <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50/50 shadow-sm">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <AlertDescription className="ml-3 text-slate-700 font-medium">
                   🔍 {isAnalyzing ? 'Analyzing model security...' : `Generating comprehensive audit report...${countdown > 0 ? ` (${countdown}s remaining)` : ''}`} Please wait.
                 </AlertDescription>
               </Alert>
@@ -86,22 +89,18 @@ export default function ReportPageClient() {
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="lg:col-span-2">
-              <SummaryCard />
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <ArchitectureCard />
-              <ModelDetailsCard />
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <MalwareScanCard />
-            </div>
-
-            <div className="lg:col-span-2">
-              <TrustCard />
+          <div className="space-y-8">
+            <SummaryCard />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-8">
+                <ArchitectureCard />
+                <MalwareScanCard />
+              </div>
+              <div className="space-y-8">
+                <TrustCard />
+                <ModelDetailsCard />
+              </div>
             </div>
           </div>
         )}
