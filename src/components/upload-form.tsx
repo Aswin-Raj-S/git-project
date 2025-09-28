@@ -8,7 +8,6 @@ import { Progress } from '@/components/ui/progress';
 import { FileUp, Loader2, UploadCloud } from 'lucide-react';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 import { useToast } from '@/hooks/use-toast';
-import { saveReportWithCode } from '@/lib/report-codes';
 
 interface UploadFormProps {
   // Remove the old props since we'll handle everything internally now
@@ -106,18 +105,35 @@ export function UploadForm({}: UploadFormProps) {
       
       setProgress(95);
       
-      // Step 3: Store results with report code and navigate to report
-      const reportCode = saveReportWithCode(analyzeResult.analysis);
+      // Step 3: Save report to database and get report code
+      setProgress(90);
+      const saveResponse = await fetch('/api/reports/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          analysisResult: analyzeResult.analysis
+        }),
+      });
+      
+      const saveResult = await saveResponse.json();
+      
+      if (!saveResult.success) {
+        throw new Error(saveResult.error || 'Failed to save report');
+      }
+      
+      // Store results with report code and navigate to report
       setAnalysisResult({
         ...analyzeResult.analysis,
-        reportCode // Add report code to analysis result
+        reportCode: saveResult.reportCode // Add report code to analysis result
       });
       setIsAnalyzing(false); // Clear analyzing state immediately
       setProgress(100);
       
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${file.name}. Report code: ${reportCode}`,
+        description: `Successfully analyzed ${file.name}. Report code: ${saveResult.reportCode}`,
       });
       
       // Navigate immediately for faster UX

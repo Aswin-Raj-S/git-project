@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Search, FileText, AlertCircle } from 'lucide-react';
-import { getReportByCode } from '@/lib/report-codes';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 
 interface ReportCodeInputProps {
