@@ -65,20 +65,35 @@ export function calculateFileIntegrityScore(analysis: ThreatAnalysis): { score: 
     score -= 25;
   }
 
+  // CRITICAL: Use threat count and main risk score as primary factors
+  if (analysis.malwareScan.threatsFound > 10) {
+    details.push(`${analysis.malwareScan.threatsFound} threats detected - EXTREMELY DANGEROUS`);
+    riskFactors.push('Massive threat count - critical security breach');
+    score = Math.max(1, Math.min(score, 3)); // Cap at 1-3% for extremely dangerous
+  } else if (analysis.malwareScan.threatsFound > 5) {
+    details.push(`${analysis.malwareScan.threatsFound} threats detected - HIGH RISK`);
+    riskFactors.push('High threat count detected');
+    score = Math.min(score, 15);
+  } else if (analysis.malwareScan.threatsFound > 0) {
+    details.push(`${analysis.malwareScan.threatsFound} threats detected`);
+    riskFactors.push('Security threats present');
+    score -= Math.min(analysis.malwareScan.threatsFound * 20, 70);
+  }
+
   // Malware scan impact
   switch (analysis.malwareScan.status) {
     case 'clean':
-      details.push('No malicious patterns detected');
+      if (analysis.malwareScan.threatsFound === 0) {
+        details.push('No malicious patterns detected');
+      }
       break;
     case 'suspicious':
-      details.push(`${analysis.malwareScan.threatsFound} suspicious patterns found`);
       riskFactors.push('Suspicious content detected');
-      score -= Math.min(analysis.malwareScan.threatsFound * 8, 30);
+      score -= 40;
       break;
     case 'infected':
-      details.push(`${analysis.malwareScan.threatsFound} threats detected`);
       riskFactors.push('Malicious content confirmed');
-      score -= Math.min(analysis.malwareScan.threatsFound * 15, 60);
+      score = Math.min(score, 10); // Cap at very low score for infected files
       break;
   }
 
@@ -86,15 +101,15 @@ export function calculateFileIntegrityScore(analysis: ThreatAnalysis): { score: 
   switch (analysis.malwareScan.severityLevel) {
     case 'critical':
       riskFactors.push('Critical security threats present');
-      score -= 50;
+      score = Math.max(1, Math.min(score, 5)); // Cap at 1-5% for critical
       break;
     case 'high':
       riskFactors.push('High-risk security issues');
-      score -= 30;
+      score = Math.min(score, 20);
       break;
     case 'medium':
       riskFactors.push('Medium-risk security concerns');
-      score -= 15;
+      score -= 25;
       break;
   }
 
@@ -182,12 +197,30 @@ export function calculateSecurityProfileScore(analysis: ThreatAnalysis): { score
   const details: string[] = [];
   const riskFactors: string[] = [];
 
+  // CRITICAL: Use the main risk score as primary factor
+  if (analysis.riskScore >= 90) {
+    details.push('Critical risk score detected - severe security threats');
+    riskFactors.push('Extremely dangerous model - critical security threats');
+    score = Math.max(1, Math.min(score, 5)); // Cap at 1-5% for critical risk
+  } else if (analysis.riskScore >= 70) {
+    details.push('High risk score - significant security concerns');
+    riskFactors.push('High-risk model with security threats');
+    score = Math.min(score, 25);
+  } else if (analysis.riskScore >= 50) {
+    details.push('Medium risk score - moderate security concerns');
+    riskFactors.push('Medium-risk model');
+    score = Math.min(score, 45);
+  } else if (analysis.riskScore >= 30) {
+    details.push('Elevated risk score detected');
+    score = Math.min(score, 65);
+  }
+
   // Architecture suspicion
   if (analysis.architecture.suspicious) {
     details.push('Suspicious model architecture detected');
     riskFactors.push('Potentially malicious model structure');
     score -= 30;
-  } else {
+  } else if (analysis.riskScore < 30) {
     details.push('Standard model architecture verified');
   }
 
@@ -197,7 +230,7 @@ export function calculateSecurityProfileScore(analysis: ThreatAnalysis): { score
     details.push(`${issueCount} security issue(s) identified`);
     riskFactors.push(...analysis.architecture.securityIssues.slice(0, 3)); // Top 3 issues
     score -= Math.min(issueCount * 12, 45);
-  } else {
+  } else if (analysis.riskScore < 30) {
     details.push('No architectural security issues found');
   }
 
@@ -342,12 +375,28 @@ export function calculateTrustScores(analysis: ThreatAnalysis): { indicators: Tr
 
   // Calculate weighted overall score
   // File integrity and security profile are most important
-  const overall = Math.round(
-    (fileIntegrity.score * 0.35) +
-    (securityProfile.score * 0.35) +
-    (modelProvenance.score * 0.20) +
-    (communityTrust.score * 0.10)
-  );
+  // For critical risk scenarios, use minimum of the critical components
+  let overall;
+  
+  if (analysis.riskScore >= 90 || analysis.malwareScan.threatsFound > 10 || analysis.malwareScan.severityLevel === 'critical') {
+    // For critical risk files, use the lowest score among critical components, minimum 1%
+    overall = Math.max(1, Math.min(fileIntegrity.score, securityProfile.score));
+  } else if (analysis.riskScore >= 70 || analysis.malwareScan.threatsFound > 5 || analysis.malwareScan.severityLevel === 'high') {
+    // For high risk files, heavily weight the security components
+    overall = Math.round(
+      (fileIntegrity.score * 0.45) +
+      (securityProfile.score * 0.45) +
+      (modelProvenance.score * 0.10)
+    );
+  } else {
+    // Standard weighted calculation for lower risk files
+    overall = Math.round(
+      (fileIntegrity.score * 0.35) +
+      (securityProfile.score * 0.35) +
+      (modelProvenance.score * 0.20) +
+      (communityTrust.score * 0.10)
+    );
+  }
 
   return { indicators, overall };
 }

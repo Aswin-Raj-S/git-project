@@ -131,39 +131,64 @@ export default function ReportPageClient() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [loadedFromCode, setLoadedFromCode] = useState(false);
+
+  // Reset states when analysisResult changes
+  useEffect(() => {
+    if (analysisResult) {
+      // If we have a new analysis result, reset the loadedFromCode flag
+      // This ensures fresh uploads don't get treated as code-loaded reports
+      if (!analysisResult.reportCode || isAnalyzing) {
+        setLoadedFromCode(false);
+      }
+    }
+  }, [analysisResult, isAnalyzing]);
 
   useEffect(() => {
-    // Check if user accessed report page directly without analysis data
+    // If there's no analysis result and not currently analyzing, show code input
     if (!analysisResult && !isAnalyzing) {
       setShowCodeInput(true);
       return;
     }
 
-    // Cleanup old reports on component mount
-    fetch('/api/reports/get?action=cleanup', { method: 'DELETE' }).catch(console.error);
+    // If we have analysis result, proceed with normal report display
+    if (analysisResult) {
+      setShowCodeInput(false);
+      
+      // Cleanup old reports on component mount
+      fetch('/api/reports/get?action=cleanup', { method: 'DELETE' }).catch(console.error);
 
-    // Countdown timer
-    const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownInterval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      // Only show 5-second delay for fresh uploads/analysis, not for code-loaded reports
+      if (loadedFromCode) {
+        // If loaded from code, show report immediately
+        setShowSkeleton(false);
+        setCountdown(0);
+        return;
+      }
 
-    // Show loading skeleton for 5 seconds on Audit Report page
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
-      setCountdown(0);
-    }, 5000);
+      // Countdown timer (only for fresh analysis)
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    return () => {
-      clearTimeout(timer);
-      clearInterval(countdownInterval);
-    };
-  }, [analysisResult, isAnalyzing]);
+      // Show loading skeleton for 5 seconds on fresh analysis only
+      const timer = setTimeout(() => {
+        setShowSkeleton(false);
+        setCountdown(0);
+      }, 5000);
+
+      return () => {
+        clearTimeout(timer);
+        clearInterval(countdownInterval);
+      };
+    }
+  }, [analysisResult, isAnalyzing, loadedFromCode]);
 
   const isLoading = showSkeleton || isAnalyzing;
 
@@ -181,6 +206,9 @@ export default function ReportPageClient() {
 
   const handleReportLoaded = () => {
     setShowCodeInput(false);
+    setLoadedFromCode(true); // Mark that this report was loaded from code
+    setShowSkeleton(false); // Show report immediately when loaded from code
+    setCountdown(0);
   };
 
   const handleDownloadPDF = async () => {
@@ -265,7 +293,9 @@ export default function ReportPageClient() {
               <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50/50 shadow-sm">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 <AlertDescription className="ml-3 text-slate-700 font-medium">
-                  🔍 {isAnalyzing ? 'Analyzing model security...' : `Generating comprehensive audit report...${countdown > 0 ? ` (${countdown}s remaining)` : ''}`} Please wait.
+                  🔍 {isAnalyzing ? 'Analyzing model security...' : 
+                      loadedFromCode ? 'Loading your report...' : 
+                      `Generating comprehensive audit report...${countdown > 0 ? ` (${countdown}s remaining)` : ''}`} Please wait.
                 </AlertDescription>
               </Alert>
             )}
