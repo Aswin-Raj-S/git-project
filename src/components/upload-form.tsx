@@ -87,6 +87,7 @@ export function UploadForm({}: UploadFormProps) {
       setProgress(50);
       
       // Step 2: Analyze file
+      setProgress(60);
       const analyzeResponse = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -95,13 +96,14 @@ export function UploadForm({}: UploadFormProps) {
         body: JSON.stringify({ fileId: uploadResult.fileId }),
       });
       
+      setProgress(80);
       const analyzeResult = await analyzeResponse.json();
       
       if (!analyzeResult.success) {
         throw new Error(analyzeResult.error || 'Analysis failed');
       }
       
-      setProgress(90);
+      setProgress(95);
       
       // Step 3: Store results and navigate to report
       setAnalysisResult(analyzeResult.analysis);
@@ -109,7 +111,7 @@ export function UploadForm({}: UploadFormProps) {
       
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${file.name}`,
+        description: `Successfully analyzed ${file.name}. Generating report...`,
       });
       
       setTimeout(() => {
@@ -172,15 +174,36 @@ export function UploadForm({}: UploadFormProps) {
       )}
       
       {loading && (
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm font-medium">
-            <span>Analyzing model...</span>
-            <span>{Math.round(progress)}%</span>
+        <div className="space-y-4 p-4 bg-secondary/50 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <div className="flex-1">
+              <div className="flex justify-between text-sm font-medium mb-1">
+                <span>
+                  {progress < 30 ? "Uploading model..." : 
+                   progress < 60 ? "Scanning for threats..." : 
+                   progress < 90 ? "Analyzing architecture..." : 
+                   "Generating report..."}
+                </span>
+                <span className="tabular-nums">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
           </div>
-          <Progress value={progress} className="h-2 [&>div]:bg-accent" />
-          <p className="text-xs text-muted-foreground text-center animate-pulse">
-            This may take a few moments. Please don't close the window.
-          </p>
+          
+          <div className="text-center space-y-2">
+            <p className="text-xs text-muted-foreground animate-pulse">
+              🔍 Deep analysis in progress - This may take a few moments
+            </p>
+            <div className="flex justify-center items-center gap-1 text-xs text-muted-foreground">
+              <span>Securing your AI model</span>
+              <div className="flex gap-1">
+                <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-1 h-1 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-1 h-1 bg-primary rounded-full animate-bounce"></div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

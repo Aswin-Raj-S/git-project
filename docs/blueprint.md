@@ -1,4 +1,4 @@
-# **App Name**: ModelSherlock
+# **App Name**: Cogniguard
 
 ## Core Features:
 

@@ -32,7 +32,7 @@ export default function Home() {
               Uncover Hidden Risks in Your AI.
             </h1>
             <p className="text-lg text-muted-foreground">
-              ModelSherlock is a comprehensive security auditing tool thatStress-tests your AI models, identifies vulnerabilities, and delivers actionable insights to help you build safer, more reliable AI.
+              Cogniguard is a comprehensive security auditing tool that stress-tests your AI models, identifies vulnerabilities, and delivers actionable insights to help you build safer, more reliable AI.
             </p>
             <UploadForm />
           </div>

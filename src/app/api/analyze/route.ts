@@ -146,8 +146,13 @@ async function performMalwareScan(fileBuffer: Buffer, fileName: string) {
   );
   
   const highThreats = foundThreats.filter(threat =>
-    threat.includes('pickle') || threat.includes('torch.load') || threat.includes('powershell') ||
+    threat.includes('torch.load') || threat.includes('powershell') ||
     threat.includes('reverse_tcp') || threat.includes('obfuscation')
+  );
+  
+  const mediumThreats = foundThreats.filter(threat =>
+    threat.includes('pickle') || threat.includes('https://') || threat.includes('http://') ||
+    threat.includes('PK') || threat.includes('zip')
   );
   
   if (criticalThreats.length > 0) {
@@ -156,18 +161,24 @@ async function performMalwareScan(fileBuffer: Buffer, fileName: string) {
     recommendations.push('DO NOT LOAD this model - contains critical security threats');
     recommendations.push('Quarantine the file immediately');
     recommendations.push('Scan your system for potential compromise');
-  } else if (highThreats.length > 0 || foundThreats.length >= 3) {
+  } else if (highThreats.length > 0 || foundThreats.length >= 5) {
     status = 'infected';
     severityLevel = 'high';
     recommendations.push('Avoid loading this model without proper sandboxing');
     recommendations.push('Review the model source and training process');
     recommendations.push('Consider using a secure model loading environment');
-  } else if (foundThreats.length > 0) {
+  } else if (mediumThreats.length > 0 || foundThreats.length >= 2) {
     status = 'suspicious';
-    severityLevel = foundThreats.length > 1 ? 'medium' : 'low';
+    severityLevel = 'medium';
     recommendations.push('Exercise caution when loading this model');
     recommendations.push('Verify the model source and integrity');
     recommendations.push('Monitor system behavior during model loading');
+  } else if (foundThreats.length > 0) {
+    status = 'suspicious';
+    severityLevel = 'low';
+    recommendations.push('Minor security concerns detected');
+    recommendations.push('Follow standard security practices');
+    recommendations.push('Monitor for unusual behavior');
   } else {
     status = 'clean';
     severityLevel = 'low';
@@ -559,24 +570,92 @@ function formatFileSize(bytes: number): string {
 function calculateRiskScore(malwareScan: any, architecture: any): number {
   let score = 0;
   
-  // Malware scan contribution (0-60 points)
-  if (malwareScan.status === 'infected') score += 60;
-  else if (malwareScan.status === 'suspicious') score += 30;
-  
-  // Add points based on number of threats found
-  score += Math.min(malwareScan.threatsFound * 5, 20);
-  
-  // Architecture contribution (0-35 points)
-  if (architecture.suspicious) score += 20;
-  if (architecture.modelType.includes('PyTorch')) score += 15; // Pickle risk
-  if (architecture.securityIssues && architecture.securityIssues.length > 0) {
-    score += Math.min(architecture.securityIssues.length * 5, 15);
+  // Enhanced malware scan contribution (0-70 points)
+  switch (malwareScan.status) {
+    case 'infected':
+      // Weighted by severity level with more nuanced scoring
+      switch (malwareScan.severityLevel) {
+        case 'critical': score += 70; break;
+        case 'high': 
+          // Reduce high severity impact for medium-risk scenarios
+          if (malwareScan.threatsFound <= 3) {
+            score += 35; // Medium-high risk
+          } else {
+            score += 55; // Truly high risk
+          }
+          break;
+        case 'medium': score += 25; break;
+        case 'low': score += 15; break;
+      }
+      break;
+    case 'suspicious':
+      // More nuanced scoring based on threat count and severity
+      const baseScore = malwareScan.severityLevel === 'medium' ? 20 : 15;
+      score += baseScore + Math.min(malwareScan.threatsFound * 2, 10);
+      break;
+    case 'clean':
+      // Clean files get no penalty
+      break;
   }
   
-  // Model size contribution (0-15 points)
-  if (architecture.parameters > 100000000000) score += 15; // > 100B parameters
-  else if (architecture.parameters > 10000000000) score += 10; // > 10B parameters
-  else if (architecture.parameters > 1000000000) score += 5; // > 1B parameters
+  // Specific threat pattern penalties (additional to base score)
+  if (malwareScan.details) {
+    const criticalPatterns = ['eval', 'exec', 'subprocess', 'meterpreter', 'reverse_tcp'];
+    const highRiskPatterns = ['torch.load', 'powershell', 'obfuscation'];
+    const mediumRiskPatterns = ['pickle', 'https://', 'http://', 'pk']; // Reduced penalty for these
+    
+    for (const threat of malwareScan.details) {
+      const lowerThreat = threat.toLowerCase();
+      
+      if (criticalPatterns.some(pattern => lowerThreat.includes(pattern))) {
+        score += 15; // Critical pattern bonus penalty
+      } else if (highRiskPatterns.some(pattern => lowerThreat.includes(pattern))) {
+        score += 8; // High risk pattern penalty
+      } else if (mediumRiskPatterns.some(pattern => lowerThreat.includes(pattern))) {
+        score += 3; // Medium risk pattern penalty (reduced)
+      }
+    }
+  }
+  
+  // Architecture contribution (0-25 points)
+  if (architecture.suspicious) {
+    score += 20; // Suspicious architecture is a major red flag
+  }
+  
+  // Model format specific risks
+  if (architecture.modelType.includes('Pickle')) {
+    score += 25; // Pickle is extremely dangerous
+  } else if (architecture.modelType.includes('PyTorch') && !architecture.modelType.includes('SafeTensors')) {
+    score += 15; // Non-SafeTensors PyTorch has deserialization risks
+  }
+  
+  // Security issues contribution
+  if (architecture.securityIssues && architecture.securityIssues.length > 0) {
+    // More sophisticated scoring based on issue types
+    let issueScore = 0;
+    for (const issue of architecture.securityIssues) {
+      const lowerIssue = issue.toLowerCase();
+      if (lowerIssue.includes('backdoor') || lowerIssue.includes('malicious')) {
+        issueScore += 10; // Critical security issues
+      } else if (lowerIssue.includes('suspicious') || lowerIssue.includes('unusual')) {
+        issueScore += 5; // Moderate security concerns
+      } else {
+        issueScore += 2; // Minor issues
+      }
+    }
+    score += Math.min(issueScore, 20);
+  }
+  
+  // Model size risks (0-10 points) - reduced weight as size alone isn't always dangerous
+  if (architecture.parameters > 175000000000) { // > 175B parameters (like GPT-3.5/4)
+    score += 10; // Extremely large models
+  } else if (architecture.parameters > 100000000000) { // > 100B parameters
+    score += 7;
+  } else if (architecture.parameters > 10000000000) { // > 10B parameters
+    score += 4;
+  } else if (architecture.parameters < 1000000 && architecture.parameters > 0) { // < 1M parameters
+    score += 5; // Suspiciously small models
+  }
   
   return Math.min(score, 100);
 }

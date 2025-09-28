@@ -4,7 +4,7 @@ import { AnalysisProvider } from '@/contexts/AnalysisContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ModelSherlock',
+  title: 'Cogniguard',
   description: 'AI Model Security Auditing Tool',
 };
 

@@ -12,7 +12,7 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <title>ModelSherlock Logo</title>
+      <title>Cogniguard Logo</title>
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       <circle cx="12" cy="10" r="3" />
       <line x1="14.5" y1="12.5" x2="18.5" y2="16.5" />

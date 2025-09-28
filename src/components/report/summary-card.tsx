@@ -29,17 +29,27 @@ export function SummaryCard() {
 
   const { riskScore, fileName, timestamp } = analysisResult;
   const getRiskDetails = (score: number) => {
-    if (score > 75) {
+    if (score >= 70) {
+      return {
+        level: 'Critical Risk',
+        color: 'text-red-600',
+        bgColor: 'bg-red-600/10',
+        borderColor: 'border-red-600/20',
+        Icon: ShieldX,
+        description: 'Critical security threats detected. Do not use this model in production. Contains malicious code, dangerous patterns, or severe vulnerabilities that could compromise your system.',
+      };
+    }
+    if (score >= 50) {
       return {
         level: 'High Risk',
         color: 'text-red-500',
         bgColor: 'bg-red-500/10',
         borderColor: 'border-red-500/20',
         Icon: ShieldX,
-        description: 'Significant vulnerabilities detected. Immediate attention required. The model is highly susceptible to adversarial attacks and may contain backdoors.',
+        description: 'Significant security risks found. Model contains suspicious patterns or potentially dangerous code. Use only in isolated environments with extreme caution.',
       };
     }
-    if (score > 40) {
+    if (score >= 30) {
       return {
         level: 'Medium Risk',
         levelColor: 'text-amber-500',
@@ -47,16 +57,26 @@ export function SummaryCard() {
         bgColor: 'bg-amber-500/10',
         borderColor: 'border-amber-500/20',
         Icon: Shield,
-        description: 'Moderate vulnerabilities found. The model shows some weakness to attacks and could be improved for production use.',
+        description: 'Moderate security concerns identified. Some risk factors present that require additional validation and monitoring before production use.',
+      };
+    }
+    if (score >= 15) {
+      return {
+        level: 'Low Risk',
+        color: 'text-yellow-500',
+        bgColor: 'bg-yellow-500/10',
+        borderColor: 'border-yellow-500/20',
+        Icon: Shield,
+        description: 'Minor security concerns detected. Generally safe but follow standard security practices and monitor for unusual behavior.',
       };
     }
     return {
-      level: 'Low Risk',
+      level: 'Minimal Risk',
       color: 'text-green-500',
       bgColor: 'bg-green-500/10',
       borderColor: 'border-green-500/20',
       Icon: ShieldCheck,
-      description: 'The model appears robust and secure. No major vulnerabilities were found during the audit.',
+      description: 'Model appears secure with no significant threats detected. Safe for production use with standard security practices.',
     };
   };
 
