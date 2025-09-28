@@ -134,31 +134,56 @@ export function UploadForm({}: UploadFormProps) {
 
   return (
     <div className="space-y-4">
-      <div
+            <div
         className={cn(
-          'relative w-full p-6 border-2 border-dashed rounded-lg text-center transition-colors duration-200',
-          isDragging ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+          'border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group',
+          isDragging
+            ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg'
+            : 'border-slate-300 hover:border-primary/60 hover:bg-primary/5 hover:shadow-md'
         )}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-        <p className="mt-2 text-sm text-muted-foreground">
-          Drag & drop your model file here (.pth, .zip, or .safetensors)
-        </p>
-        <p className="text-xs text-muted-foreground">or</p>
-        <Button variant="outline" size="sm" className="mt-2" onClick={() => document.getElementById('file-upload')?.click()}>
-          Select File
-        </Button>
-        <input
-          id="file-upload"
-          type="file"
-          accept=".pth,.zip,.safetensors"
-          className="hidden"
-          onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
-        />
+        <div className="space-y-6">
+          <div className={cn(
+            'mx-auto w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300',
+            isDragging ? 'bg-primary/20 scale-110' : 'bg-slate-100 group-hover:bg-primary/10 group-hover:scale-105'
+          )}>
+            <UploadCloud className={cn(
+              'h-10 w-10 transition-colors duration-300',
+              isDragging ? 'text-primary' : 'text-slate-400 group-hover:text-primary'
+            )} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-xl font-semibold text-slate-700">
+              Drag & drop your model file here
+            </p>
+            <p className="text-slate-500">
+              Supports .pth, .zip, and .safetensors formats
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-slate-200"></div>
+            <span className="text-sm text-slate-400 font-medium">OR</span>
+            <div className="flex-1 h-px bg-slate-200"></div>
+          </div>
+          <Button
+            onClick={() => document.getElementById('file-input')?.click()}
+            className="gap-3 h-12 px-8 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+          >
+            <FileUp className="w-5 h-5" />
+            Browse Files
+          </Button>
+          <input
+            id="file-input"
+            type="file"
+            accept=".pth,.zip,.safetensors"
+            onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+            className="hidden"
+          />
+        </div>
       </div>
 
       {file && !loading && (
