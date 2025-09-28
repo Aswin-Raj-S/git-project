@@ -16,19 +16,22 @@ interface StoredReport {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const code = searchParams.get('code')?.toUpperCase();
+    const rawCode = searchParams.get('code');
 
-    if (!code) {
+    if (!rawCode) {
       return NextResponse.json(
         { success: false, error: 'Report code is required' },
         { status: 400 }
       );
     }
 
-    // Validate code format (8 characters, alphanumeric)
-    if (!/^[A-Z0-9]{8}$/.test(code)) {
+    // Clean the code (remove dashes, spaces, convert to uppercase)
+    const code = rawCode.replace(/[^A-Z0-9]/g, '').toUpperCase();
+
+    // Validate code format (exactly 8 characters, alphanumeric)
+    if (!code || code.length !== 8 || !/^[A-Z0-9]{8}$/.test(code)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid report code format' },
+        { success: false, error: `Invalid report code format. Expected 8 alphanumeric characters, received: "${rawCode}"` },
         { status: 400 }
       );
     }

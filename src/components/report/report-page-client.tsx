@@ -16,7 +16,6 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, CheckCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { ReportCodeInput } from '@/components/report/report-code-input';
-import { cleanupOldReports } from '@/lib/report-codes';
 
 // PDF generation function using jsPDF
 function generatePDF(analysisResult: any): void {
@@ -141,7 +140,7 @@ export default function ReportPageClient() {
     }
 
     // Cleanup old reports on component mount
-    cleanupOldReports();
+    fetch('/api/reports/get?action=cleanup', { method: 'DELETE' }).catch(console.error);
 
     // Countdown timer
     const countdownInterval = setInterval(() => {

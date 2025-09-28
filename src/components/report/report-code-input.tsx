@@ -30,17 +30,27 @@ export function ReportCodeInput({ onReportLoaded }: ReportCodeInputProps) {
     setError('');
 
     try {
-      const storedReport = getReportByCode(code.trim());
+      // Clean the code (remove dashes and spaces) before sending to API
+      const cleanCode = code.replace(/[^A-Z0-9]/g, '').toUpperCase();
       
-      if (storedReport) {
+      // Fetch report from database API
+      const response = await fetch(`/api/reports/get?code=${encodeURIComponent(cleanCode)}`);
+      const result = await response.json();
+      
+      if (result.success && result.report) {
         // Load the report into the analysis context
-        setAnalysisResult(storedReport.analysisResult);
+        setAnalysisResult({
+          ...result.report.analysisResult,
+          reportCode: result.report.code
+        });
         onReportLoaded();
       } else {
-        setError('Report code not found. Please check the code and try again.');
+        console.error('API Error:', result);
+        setError(result.error || 'Report code not found. Please check the code and try again.');
       }
     } catch (err) {
-      setError('Error loading report. Please try again.');
+      console.error('Error loading report:', err);
+      setError('Error loading report. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -85,13 +95,13 @@ export function ReportCodeInput({ onReportLoaded }: ReportCodeInputProps) {
                 type="text"
                 value={code}
                 onChange={handleCodeChange}
-                placeholder="XXXX-XXXX"
+                placeholder="ABCD-1234"
                 maxLength={9}
                 className="text-center text-lg font-mono tracking-wider h-12 border-slate-300 focus:border-primary focus:ring-primary"
                 disabled={isLoading}
               />
               <p className="text-xs text-slate-500 text-center">
-                Enter the 8-character code from your report
+                Enter the 8-character code from your report (format: ABCD-1234)
               </p>
             </div>
 
@@ -106,7 +116,7 @@ export function ReportCodeInput({ onReportLoaded }: ReportCodeInputProps) {
 
             <Button 
               type="submit" 
-              disabled={isLoading || code.length < 8}
+              disabled={isLoading || code.replace(/[^A-Z0-9]/g, '').length < 8}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {isLoading ? (
