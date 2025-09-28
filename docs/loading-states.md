@@ -85,7 +85,7 @@ setProgress(100); // Report ready
 
 ### Loading States
 ```typescript
-const isLoading = isAnalyzing || showSkeleton || !analysisResult;
+const isLoading = isAnalyzing || (showSkeleton && !analysisResult);
 ```
 
 ## User Experience Improvements
@@ -152,10 +152,19 @@ const isLoading = isAnalyzing || showSkeleton || !analysisResult;
 3. **Error Handling**: Test with invalid files or network errors
 4. **Progress Tracking**: Verify smooth progress bar updates
 
+### Performance Optimizations
+
+### Fast Loading Experience
+- **Optimized Skeleton Time**: Reduced from 1000ms to 300ms
+- **Immediate Data Display**: Shows content instantly when analysis data is available
+- **Smart Loading Logic**: Only shows skeleton when actually needed
+- **Instant Navigation**: Removed artificial delays in navigation
+
 ### Performance Considerations
-- **Minimum Loading Time**: 1 second skeleton display prevents flash
+- **Responsive Loading**: Adapts to actual data availability
 - **Smooth Transitions**: CSS transitions for all state changes
 - **Efficient Updates**: Minimal re-renders during progress updates
+- **Preemptive State Clearing**: Clears loading states as soon as possible
 
 ## Future Enhancements
 

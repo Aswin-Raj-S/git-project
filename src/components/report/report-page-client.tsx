@@ -16,17 +16,33 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function ReportPageClient() {
   const { analysisResult, isAnalyzing } = useAnalysis();
   const [showSkeleton, setShowSkeleton] = useState(true);
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
-    // Show skeleton for a minimum time to avoid flash
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    return () => clearTimeout(timer);
+    // Show loading skeleton for 5 seconds on Audit Report page
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+      setCountdown(0);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(countdownInterval);
+    };
   }, []);
 
-  const isLoading = isAnalyzing || showSkeleton || !analysisResult;
+  const isLoading = showSkeleton || isAnalyzing;
 
   return (
     <div className="flex flex-col flex-1">
@@ -53,11 +69,11 @@ export default function ReportPageClient() {
 
         {isLoading ? (
           <div className="space-y-6">
-            {isAnalyzing && (
+            {(isAnalyzing || showSkeleton) && (
               <Alert>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <AlertDescription className="ml-2">
-                  🔍 Analyzing your AI model... This may take a few moments while we perform comprehensive security checks.
+                  🔍 {isAnalyzing ? 'Analyzing model security...' : `Generating comprehensive audit report...${countdown > 0 ? ` (${countdown}s remaining)` : ''}`} Please wait.
                 </AlertDescription>
               </Alert>
             )}

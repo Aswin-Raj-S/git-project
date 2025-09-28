@@ -96,7 +96,7 @@ export function UploadForm({}: UploadFormProps) {
         body: JSON.stringify({ fileId: uploadResult.fileId }),
       });
       
-      setProgress(80);
+      setProgress(85);
       const analyzeResult = await analyzeResponse.json();
       
       if (!analyzeResult.success) {
@@ -107,16 +107,16 @@ export function UploadForm({}: UploadFormProps) {
       
       // Step 3: Store results and navigate to report
       setAnalysisResult(analyzeResult.analysis);
+      setIsAnalyzing(false); // Clear analyzing state immediately
       setProgress(100);
       
       toast({
         title: "Analysis Complete",
-        description: `Successfully analyzed ${file.name}. Generating report...`,
+        description: `Successfully analyzed ${file.name}.`,
       });
       
-      setTimeout(() => {
-        router.push('/report');
-      }, 500);
+      // Navigate immediately for faster UX
+      router.push('/report');
       
     } catch (error) {
       console.error('Analysis error:', error);
@@ -180,10 +180,10 @@ export function UploadForm({}: UploadFormProps) {
             <div className="flex-1">
               <div className="flex justify-between text-sm font-medium mb-1">
                 <span>
-                  {progress < 30 ? "Uploading model..." : 
-                   progress < 60 ? "Scanning for threats..." : 
+                  {progress < 25 ? "Uploading model..." : 
+                   progress < 65 ? "Scanning for threats..." : 
                    progress < 90 ? "Analyzing architecture..." : 
-                   "Generating report..."}
+                   "Almost ready..."}
                 </span>
                 <span className="tabular-nums">{Math.round(progress)}%</span>
               </div>
@@ -193,7 +193,7 @@ export function UploadForm({}: UploadFormProps) {
           
           <div className="text-center space-y-2">
             <p className="text-xs text-muted-foreground animate-pulse">
-              🔍 Deep analysis in progress - This may take a few moments
+              🔍 Running security analysis - Just a moment!
             </p>
             <div className="flex justify-center items-center gap-1 text-xs text-muted-foreground">
               <span>Securing your AI model</span>
